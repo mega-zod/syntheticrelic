@@ -1,0 +1,33 @@
+{
+	email admin@syntheticrelic.dev
+}
+
+syntheticrelic.dev {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+	}
+
+	reverse_proxy web:3000
+}
+
+www.syntheticrelic.dev {
+	redir https://syntheticrelic.dev{uri} permanent
+}
+
+api.syntheticrelic.dev {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+	}
+
+	reverse_proxy api:8011
+}

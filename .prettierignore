@@ -1,0 +1,12 @@
+node_modules
+dist
+apps/web/.next
+.output
+.next
+.vinxi
+pnpm-lock.yaml
+package-lock.json
+bun.lock
+routeTree.gen.ts
+public/favicon.ico
+public/favicon.png

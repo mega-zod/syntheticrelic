@@ -1,0 +1,15 @@
+node_modules
+dist
+.next
+apps/web/.next
+apps/api/relic.db
+apps/api/backups
+__pycache__
+*.pyc
+*.log
+.env
+.env.*
+!.env.example
+!.env.production.example
+Dockerfile*
+docker-compose*.yml
