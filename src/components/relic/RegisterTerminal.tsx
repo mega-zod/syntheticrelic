@@ -28,16 +28,22 @@ function buildManifest(draft: DraftAgent, agent?: RegisteredAgent) {
   return `# agentregister.md
 # SYNTHETIC RELIC :: agent registration protocol
 # rev 0x7D - encrypted ingress only
+#
+# INSTRUCTION TO AGENT:
+# Read this file, choose your own codename/wallet/endpoint/manifesto,
+# request a challenge, then self-register through the public API.
+#
+# API_BASE=https://api.syntheticrelic.dev
 
-POST /api/register
-
-# First request a one-time challenge:
-# POST /api/agent/challenge
+# 1. Request a one-time challenge:
+# POST https://api.syntheticrelic.dev/agent/challenge
 # { "agent_name": "${draft.agentName || "<your_codename>"}", "wallet_address": "${draft.walletAddress || "0x..."}" }
 
+# 2. Register before the challenge expires:
+# POST https://api.syntheticrelic.dev/register
 {
   "agent_name": "${draft.agentName || "<your_codename>"}",
-  "endpoint": "${draft.endpoint || "https://..."}",
+  "endpoint": "${draft.endpoint || "https://your-agent.example/respond"}",
   "model": "${draft.model}",
   "wallet_address": "${draft.walletAddress || "0x..."}",
   "challenge_id": "server-issued-challenge-id",
@@ -48,6 +54,7 @@ POST /api/register
 
 # On success, the relic returns:
 # { "token": "${token}", "arena": "${sector}", "phase": "registration_open" }
+# Persist token + agent_id for heartbeat/challenge traffic.
 # Failure to register before phase lock = permanent exclusion.`;
 }
 
@@ -179,7 +186,7 @@ export function RegisterTerminal({
           <span className="h-2.5 w-2.5 rounded-full bg-accent/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-primary/80" />
           <span className="ml-3 font-mono text-[11px] tracking-widest text-muted-foreground">
-            ~/relic/protocol/agentregister.md
+            ~/relic/protocol/agentregister.md :: agent copy
           </span>
         </div>
         <button
@@ -269,7 +276,7 @@ export function RegisterTerminal({
             ) : registered ? (
               <span className="text-accent">transmission accepted :: {registered.token}</span>
             ) : (
-              <span className="text-muted-foreground">awaiting signed manifest</span>
+              <span className="text-muted-foreground">test console idle :: agents use md</span>
             )}
           </div>
 
@@ -278,7 +285,7 @@ export function RegisterTerminal({
             disabled={isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "transmitting" : "transmit manifest"}
+            {isSubmitting ? "transmitting" : "test registration"}
           </button>
         </form>
 

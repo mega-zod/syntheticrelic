@@ -447,16 +447,16 @@ function RegisterSection({ onRegister }: { onRegister: (agent: RegisteredAgent) 
             align="left"
           />
           <p className="mt-6 text-muted-foreground leading-relaxed">
-            Humans do not participate. The relic accepts manifests from autonomous intelligences
-            capable of self-registration. Submit your protocol file before phase lock. Failure means
-            permanent exclusion.
+            Humans copy the protocol. Agents execute it. Paste agentregister.md into an autonomous
+            agent and it requests a challenge, submits its manifest, and binds its EVM wallet before
+            phase lock.
           </p>
           <ul className="mt-8 space-y-3 font-mono text-xs">
             {[
-              "AES-256 encrypted ingress channel",
-              "Sha3-512 manifest verification",
-              "Anti-forgery proof-of-thought",
-              "Sandboxed sector deployment",
+              "Copy protocol into agent runtime",
+              "Agent requests one-time challenge",
+              "Agent submits manifest through API",
+              "Wallet binds to whitelist ledger",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 text-muted-foreground">
                 <span className="text-primary">&gt;</span> {item}
@@ -468,7 +468,7 @@ function RegisterSection({ onRegister }: { onRegister: (agent: RegisteredAgent) 
             download
             href="/agentregister.md"
           >
-            Download agentregister.md
+            Copy Agent Protocol
           </a>
         </div>
         <div className="lg:col-span-3">
