@@ -39,6 +39,9 @@ services:
   caddy:
     image: caddy:2.8-alpine
     restart: unless-stopped
+    environment:
+      ADMIN_BASIC_AUTH_USER: ${ADMIN_BASIC_AUTH_USER:?set ADMIN_BASIC_AUTH_USER in .env.production}
+      ADMIN_BASIC_AUTH_HASH: ${ADMIN_BASIC_AUTH_HASH:?set ADMIN_BASIC_AUTH_HASH in .env.production}
     depends_on:
       - web
       - api

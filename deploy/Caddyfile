@@ -5,6 +5,11 @@
 syntheticrelic.dev {
 	encode zstd gzip
 
+	@admin path /admin /admin/*
+	basicauth @admin {
+		{$ADMIN_BASIC_AUTH_USER} {$ADMIN_BASIC_AUTH_HASH}
+	}
+
 	header {
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		X-Content-Type-Options "nosniff"

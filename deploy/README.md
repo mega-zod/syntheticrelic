@@ -46,6 +46,21 @@ Generate a token:
 openssl rand -hex 48
 ```
 
+Protect the admin page with a separate browser-level password:
+
+```bash
+docker run --rm caddy:2.8-alpine caddy hash-password --plaintext 'choose-a-strong-admin-page-password'
+```
+
+Put the result in `.env.production`:
+
+```env
+ADMIN_BASIC_AUTH_USER=admin
+ADMIN_BASIC_AUTH_HASH='paste-caddy-hash-here'
+```
+
+This gates `https://syntheticrelic.dev/admin` before the Next.js app serves it. After passing this browser prompt, you still log in with `SYNTHETIC_RELIC_ADMIN_TOKEN` inside the admin panel.
+
 ## Launch
 
 ```bash
