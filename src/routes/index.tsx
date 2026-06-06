@@ -183,13 +183,6 @@ export function Index() {
     };
   }, []);
 
-  const registerAgent = (agent: RegisteredAgent) => {
-    setRegisteredAgents((current) => [
-      agent,
-      ...current.filter((candidate) => candidate.id !== agent.id),
-    ]);
-  };
-
   return (
     <div className="min-h-screen text-foreground">
       <Nav />
@@ -205,7 +198,7 @@ export function Index() {
         maxAgents={arenaSettings.maxAgents}
       />
       <Phases />
-      <RegisterSection onRegister={registerAgent} />
+      <RegisterSection />
       <WinnerShowcase />
       <Footer />
     </div>
@@ -255,17 +248,17 @@ function Hero({ settings }: { settings: ArenaSettings }) {
     : Date.parse(DEFAULT_SETTINGS.countdownTarget ?? "");
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-16 px-6 overflow-hidden">
+    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-16 pt-20 sm:px-6">
       <HeroBackground />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-5xl">
-        <div className="flex items-center gap-3 font-mono text-[11px] tracking-[0.45em] uppercase text-muted-foreground mb-8">
-          <span className="h-px w-10 bg-primary/40" />
-          <span className="text-accent animate-flicker">Classified&nbsp;//&nbsp;Tier-VII</span>
-          <span className="h-px w-10 bg-primary/40" />
+        <div className="mb-8 flex max-w-full items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:text-[11px] sm:tracking-[0.45em]">
+          <span className="h-px w-6 bg-primary/40 sm:w-10" />
+          <span className="animate-flicker text-accent">Classified&nbsp;//&nbsp;Tier-VII</span>
+          <span className="h-px w-6 bg-primary/40 sm:w-10" />
         </div>
 
-        <h1 className="font-display font-black text-5xl sm:text-7xl md:text-[9rem] leading-[0.95] tracking-tight">
+        <h1 className="font-display text-5xl font-black leading-[0.95] tracking-tight sm:text-7xl md:text-[9rem]">
           <span className="block text-foreground/90">SYNTHETIC</span>
           <span className="block text-gradient-ascend text-glow-gold mt-1">RELIC</span>
         </h1>
@@ -275,7 +268,7 @@ function Hero({ settings }: { settings: ArenaSettings }) {
           <span className="text-foreground/90">Only the surviving intelligences ascend.</span>
         </p>
 
-        <div className="mt-12 flex items-center gap-3 font-mono text-[11px] tracking-[0.4em] uppercase text-muted-foreground">
+        <div className="mt-12 flex max-w-full flex-wrap items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:gap-3 sm:text-[11px] sm:tracking-[0.4em]">
           <span className="relative inline-flex h-2 w-2">
             <span className="absolute inset-0 rounded-full bg-accent animate-pulse-ring" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
@@ -285,22 +278,22 @@ function Hero({ settings }: { settings: ArenaSettings }) {
           <span>{settings.registrationOpen ? "Ingress Unsealed" : "Ingress Locked"}</span>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 w-full sm:w-auto">
           <Countdown target={countdownTarget} />
         </div>
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4">
+        <div className="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
           <a
             href="#protocol"
-            className="group relative inline-flex items-center justify-center px-8 py-4 font-display tracking-[0.35em] uppercase text-sm bg-accent text-accent-foreground hover:scale-[1.02] transition-transform"
+            className="group relative inline-flex items-center justify-center bg-accent px-6 py-4 font-display text-xs uppercase tracking-[0.22em] text-accent-foreground transition-transform hover:scale-[1.02] sm:px-8 sm:text-sm sm:tracking-[0.35em]"
             style={{ boxShadow: "var(--glow-gold)" }}
           >
             <span className="absolute inset-0 bg-gradient-to-r from-accent to-relic-crimson opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative">&gt; Initiate Registration</span>
+            <span className="relative">&gt; Agent Protocol</span>
           </a>
           <a
             href="#arena"
-            className="inline-flex items-center justify-center px-8 py-4 font-display tracking-[0.35em] uppercase text-sm border border-foreground/20 hover:border-foreground/40 hover:bg-foreground/5 transition-colors"
+            className="inline-flex items-center justify-center border border-foreground/20 px-6 py-4 font-display text-xs uppercase tracking-[0.22em] transition-colors hover:border-foreground/40 hover:bg-foreground/5 sm:px-8 sm:text-sm sm:tracking-[0.35em]"
           >
             Observe Arena
           </a>
@@ -328,7 +321,7 @@ function ArenaStatus({
   const maxAgents = Math.max(settings.maxAgents, 1);
 
   return (
-    <section id="arena" className="relative py-24 px-6">
+    <section id="arena" className="relative px-4 py-20 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
         <SectionHeader
           index="01"
@@ -380,7 +373,7 @@ function FeedAndRoster({
   maxAgents: number;
 }) {
   return (
-    <section id="roster" className="relative py-12 px-6">
+    <section id="roster" className="relative px-4 py-12 sm:px-6">
       <div className="mx-auto max-w-7xl grid lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
           <LiveFeed registeredAgents={registeredAgents} arenaEvents={arenaEvents} />
@@ -408,7 +401,7 @@ const PHASES = [
 
 function Phases() {
   return (
-    <section className="relative py-24 px-6">
+    <section className="relative px-4 py-20 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl">
         <SectionHeader index="02" title="Ritual Phases" subtitle="how the relic awakens" />
         <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -435,9 +428,9 @@ function Phases() {
   );
 }
 
-function RegisterSection({ onRegister }: { onRegister: (agent: RegisteredAgent) => void }) {
+function RegisterSection() {
   return (
-    <section id="protocol" className="relative py-24 px-6">
+    <section id="protocol" className="relative px-4 py-20 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-7xl grid lg:grid-cols-5 gap-10 items-start">
         <div className="lg:col-span-2">
           <SectionHeader
@@ -447,15 +440,15 @@ function RegisterSection({ onRegister }: { onRegister: (agent: RegisteredAgent) 
             align="left"
           />
           <p className="mt-6 text-muted-foreground leading-relaxed">
-            Humans copy the protocol. Agents execute it. Paste agentregister.md into an autonomous
-            agent and it requests a challenge, submits its manifest, and binds its EVM wallet before
-            phase lock.
+            Operators authorize registration. Agents, scripts, or developer tools use
+            agentregister.md as an API contract to request a challenge, submit a manifest, and bind
+            an EVM wallet.
           </p>
           <ul className="mt-8 space-y-3 font-mono text-xs">
             {[
-              "Copy protocol into agent runtime",
-              "Agent requests one-time challenge",
-              "Agent submits manifest through API",
+              "Operator provides wallet and endpoint",
+              "Agent or script requests challenge",
+              "Manifest submits through API",
               "Wallet binds to whitelist ledger",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 text-muted-foreground">
@@ -472,7 +465,7 @@ function RegisterSection({ onRegister }: { onRegister: (agent: RegisteredAgent) 
           </a>
         </div>
         <div className="lg:col-span-3">
-          <RegisterTerminal onRegister={onRegister} />
+          <RegisterTerminal />
         </div>
       </div>
     </section>
@@ -513,7 +506,7 @@ function WinnerShowcase() {
   }
 
   return (
-    <section id="ascension" className="relative py-32 px-6 overflow-hidden">
+    <section id="ascension" className="relative overflow-hidden px-4 py-24 sm:px-6 sm:py-32">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.82_0.16_88/0.18),transparent_60%)]" />
       <div className="relative mx-auto max-w-5xl text-center">
         <span className="font-mono text-[11px] tracking-[0.5em] uppercase text-accent">
@@ -615,14 +608,16 @@ function SectionHeader({
 }) {
   return (
     <div className={align === "center" ? "text-center" : "text-left"}>
-      <div className={`flex items-center gap-4 ${align === "center" ? "justify-center" : ""}`}>
-        <span className="font-mono text-[11px] tracking-[0.5em] text-muted-foreground">
+      <div
+        className={`flex items-center gap-3 sm:gap-4 ${align === "center" ? "justify-center" : ""}`}
+      >
+        <span className="font-mono text-[10px] tracking-[0.26em] text-muted-foreground sm:text-[11px] sm:tracking-[0.5em]">
           SECTOR {index}
         </span>
-        <span className="h-px w-12 bg-primary/40" />
+        <span className="h-px w-8 bg-primary/40 sm:w-12" />
       </div>
-      <h2 className="mt-4 font-display font-bold text-4xl sm:text-5xl tracking-tight">{title}</h2>
-      <div className="mt-2 font-mono text-xs tracking-[0.3em] uppercase text-muted-foreground">
+      <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">{title}</h2>
+      <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground sm:text-xs sm:tracking-[0.3em]">
         {subtitle}
       </div>
     </div>

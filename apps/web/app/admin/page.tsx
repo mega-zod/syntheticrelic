@@ -863,7 +863,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <section className="border-b border-primary/10 px-6 py-6">
+      <section className="border-b border-primary/10 px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.4em] text-accent">
@@ -874,13 +874,13 @@ export default function AdminPage() {
               ARENA COMMAND
             </h1>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
             <label className="grid gap-2">
               <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
                 root admin token
               </span>
               <input
-                className="h-10 w-full min-w-72 border border-primary/20 bg-relic-void/70 px-3 font-mono text-xs outline-none focus:border-accent/60"
+                className="h-10 w-full min-w-0 border border-primary/20 bg-relic-void/70 px-3 font-mono text-xs outline-none focus:border-accent/60 sm:min-w-72"
                 onChange={(event) => setAdminToken(event.target.value)}
                 placeholder="exchange once for session"
                 type="password"
@@ -904,7 +904,7 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-5 px-6 py-6 sm:grid-cols-2 lg:grid-cols-6">
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-6">
         <StatBlock icon={<RadioTower size={18} />} label="Agents" value={totals.agents} />
         <StatBlock icon={<Activity size={18} />} label="Alive" value={totals.alive} />
         <StatBlock icon={<Crown size={18} />} label="WL Remain" value={totals.whitelistRemaining} />
@@ -925,7 +925,7 @@ export default function AdminPage() {
         />
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="chamber rounded-sm">
           <header className="flex items-center justify-between border-b border-primary/15 px-5 py-4">
             <h2 className="font-display text-sm uppercase tracking-[0.35em]">Containment Roster</h2>

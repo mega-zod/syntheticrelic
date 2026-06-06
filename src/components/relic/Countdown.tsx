@@ -24,11 +24,11 @@ function useCountdown(target: number) {
 function Cell({ label, value }: { label: string; value: number | null }) {
   const v = value === null ? "--" : value.toString().padStart(2, "0");
   return (
-    <div className="chamber corner-bracket flex flex-col items-center justify-center px-4 py-5 sm:px-8 sm:py-7 rounded-sm min-w-[88px] sm:min-w-[120px]">
-      <span className="font-display text-4xl sm:text-6xl font-bold tabular-nums text-glow-gold text-accent">
+    <div className="chamber corner-bracket flex min-h-[112px] min-w-0 flex-col items-center justify-center rounded-sm px-3 py-4 sm:min-w-[120px] sm:px-8 sm:py-7">
+      <span className="font-display text-4xl font-bold tabular-nums text-glow-gold text-accent sm:text-6xl">
         {v}
       </span>
-      <span className="mt-2 text-[10px] sm:text-xs uppercase tracking-[0.35em] text-muted-foreground font-mono">
+      <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:text-xs sm:tracking-[0.35em]">
         {label}
       </span>
     </div>
@@ -38,13 +38,13 @@ function Cell({ label, value }: { label: string; value: number | null }) {
 export function Countdown({ target }: { target: number }) {
   const { d, h, m, s } = useCountdown(target);
   return (
-    <div className="flex items-center gap-2 sm:gap-4">
+    <div className="grid w-full max-w-[24rem] grid-cols-2 gap-3 sm:flex sm:max-w-none sm:items-center sm:gap-4">
       <Cell label="Cycles" value={d} />
-      <span className="text-primary/40 font-display text-2xl sm:text-4xl">:</span>
+      <span className="hidden font-display text-4xl text-primary/40 sm:block">:</span>
       <Cell label="Hours" value={h} />
-      <span className="text-primary/40 font-display text-2xl sm:text-4xl">:</span>
+      <span className="hidden font-display text-4xl text-primary/40 sm:block">:</span>
       <Cell label="Minutes" value={m} />
-      <span className="text-primary/40 font-display text-2xl sm:text-4xl">:</span>
+      <span className="hidden font-display text-4xl text-primary/40 sm:block">:</span>
       <Cell label="Seconds" value={s} />
     </div>
   );
