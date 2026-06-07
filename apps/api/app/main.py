@@ -16,9 +16,11 @@ from .repository import (
     WalletRejected,
     arena_totals,
     check_whitelist_wallet,
+    claim_registration_intent,
     create_admin_audit,
     create_event,
     create_database_backup,
+    create_registration_intent,
     clear_test_data,
     delete_whitelist_entry,
     find_whitelist_entry_by_wallet,
@@ -67,6 +69,9 @@ from .schemas import (
     EventsResponse,
     HeartbeatPayload,
     HeartbeatResponse,
+    RegistrationIntentClaimPayload,
+    RegistrationIntentPayload,
+    RegistrationIntentResponse,
     RegisterPayload,
     RegisterResponse,
     WhitelistCheckResponse,
@@ -303,6 +308,38 @@ def agent_challenge(payload: AgentChallengePayload) -> AgentChallengeResponse:
         return issue_agent_challenge(payload)
     except WalletRejected as error:
         raise HTTPException(status_code=422, detail=error.detail) from error
+
+
+@app.post("/register/intent", response_model=RegistrationIntentResponse, status_code=201)
+def registration_intent(payload: RegistrationIntentPayload) -> RegistrationIntentResponse:
+    try:
+        return create_registration_intent(payload)
+    except WalletRejected as error:
+        raise HTTPException(status_code=422, detail=error.detail) from error
+
+
+@app.post("/register/intent/{intent_id}/claim", response_model=RegisterResponse, status_code=201)
+async def registration_intent_claim(
+    intent_id: str,
+    payload: RegistrationIntentClaimPayload,
+) -> RegisterResponse:
+    try:
+        agent, event = claim_registration_intent(intent_id, payload)
+    except RegistrationRejected as error:
+        raise HTTPException(status_code=403, detail=error.detail) from error
+    except WalletRejected as error:
+        raise HTTPException(status_code=422, detail=error.detail) from error
+
+    settings = get_arena_settings()
+    await arena_hub.broadcast({"kind": "event", "event": event.model_dump()})
+    await arena_hub.broadcast({"kind": "agents", "agents": [agent.model_dump()]})
+    return RegisterResponse(
+        agent=agent,
+        token=agent.token,
+        agent_id=agent.id,
+        arena=agent.sector,
+        phase=settings.phase,
+    )
 
 
 @app.get("/agents", response_model=AgentsResponse)

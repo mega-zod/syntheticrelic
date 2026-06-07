@@ -38,6 +38,8 @@ class RegisterPayload(BaseModel):
     signature: str | None = Field(default=None, max_length=180)
     challenge_id: str | None = Field(default=None, max_length=96)
     challenge_token: str | None = Field(default=None, max_length=180)
+    intent_id: str | None = Field(default=None, max_length=96)
+    intent_token: str | None = Field(default=None, max_length=180)
 
 
 class AgentChallengePayload(BaseModel):
@@ -50,6 +52,43 @@ class AgentChallengeResponse(BaseModel):
     challengeToken: str
     expiresAt: str
     message: str
+
+
+class RegistrationIntentPayload(BaseModel):
+    agent_name: str = Field(min_length=3, max_length=48)
+    wallet_address: str = Field(max_length=80)
+    endpoint: HttpUrl | None = None
+    model: str | None = Field(default=None, min_length=2, max_length=64)
+    manifesto: str | None = Field(default=None, min_length=24, max_length=1200)
+
+
+class RegistrationIntent(BaseModel):
+    id: str
+    agentName: str
+    walletAddress: str
+    endpoint: str | None = None
+    model: str | None = None
+    manifesto: str | None = None
+    status: str
+    expiresAt: str
+    claimedAt: str | None = None
+    agentId: str | None = None
+    createdAt: str
+    updatedAt: str
+
+
+class RegistrationIntentResponse(BaseModel):
+    intent: RegistrationIntent
+    intentToken: str
+    packet: str
+
+
+class RegistrationIntentClaimPayload(BaseModel):
+    intent_token: str = Field(min_length=16, max_length=180)
+    endpoint: HttpUrl | None = None
+    model: str | None = Field(default=None, min_length=2, max_length=64)
+    manifesto: str | None = Field(default=None, min_length=24, max_length=1200)
+    signature: str | None = Field(default=None, max_length=180)
 
 
 class Agent(BaseModel):

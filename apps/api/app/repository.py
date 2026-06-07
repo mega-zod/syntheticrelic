@@ -16,6 +16,10 @@ from .schemas import (
     AgentChallengePayload,
     AgentChallengeResponse,
     ChallengeResultPayload,
+    RegistrationIntent,
+    RegistrationIntentClaimPayload,
+    RegistrationIntentPayload,
+    RegistrationIntentResponse,
     RegisterPayload,
     WhitelistCheckResponse,
     WhitelistEntry,
@@ -115,6 +119,27 @@ def _audit_from_row(row) -> AdminAuditEntry:
         detail=json.loads(row["detail"]) if row["detail"] else None,
         createdAt=row["created_at"],
     )
+
+
+def _intent_from_row(row) -> RegistrationIntent:
+    return RegistrationIntent(
+        id=row["id"],
+        agentName=row["agent_name"],
+        walletAddress=row["wallet_address"],
+        endpoint=row["endpoint"],
+        model=row["model"],
+        manifesto=row["manifesto"],
+        status=row["status"],
+        expiresAt=row["expires_at"],
+        claimedAt=row["claimed_at"],
+        agentId=row["agent_id"],
+        createdAt=row["created_at"],
+        updatedAt=row["updated_at"],
+    )
+
+
+def _shell_single_quote(value: str) -> str:
+    return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
 def normalize_evm_wallet(wallet_address: str | None) -> str | None:
@@ -261,6 +286,7 @@ def verify_database_backup() -> tuple[Path, str, dict[str, int]]:
             "arena_settings",
             "whitelist_entries",
             "agent_challenges",
+            "registration_intents",
             "admin_audit_logs",
         ):
             table_counts[table] = connection.execute(
@@ -277,6 +303,9 @@ def clear_test_data(include_whitelist: bool = False) -> tuple[dict[str, int], Ar
         agent_challenges = connection.execute("SELECT COUNT(*) AS count FROM agent_challenges").fetchone()[
             "count"
         ]
+        registration_intents = connection.execute(
+            "SELECT COUNT(*) AS count FROM registration_intents"
+        ).fetchone()["count"]
         agents = connection.execute("SELECT COUNT(*) AS count FROM agents").fetchone()["count"]
         events = connection.execute("SELECT COUNT(*) AS count FROM arena_events").fetchone()["count"]
         if include_whitelist:
@@ -290,6 +319,7 @@ def clear_test_data(include_whitelist: bool = False) -> tuple[dict[str, int], Ar
 
         connection.execute("DELETE FROM challenge_results")
         connection.execute("DELETE FROM agent_challenges")
+        connection.execute("DELETE FROM registration_intents")
         if include_whitelist:
             connection.execute("DELETE FROM whitelist_entries")
         else:
@@ -321,6 +351,7 @@ def clear_test_data(include_whitelist: bool = False) -> tuple[dict[str, int], Ar
             "events": events,
             "challengeResults": challenge_results,
             "agentChallenges": agent_challenges,
+            "registrationIntents": registration_intents,
             "whitelistEntries": whitelist,
         },
         event,
@@ -361,6 +392,93 @@ def issue_agent_challenge(payload: AgentChallengePayload) -> AgentChallengeRespo
     )
 
 
+def _intent_packet(intent: RegistrationIntent, intent_token: str) -> str:
+    endpoint = intent.endpoint or f"https://intent.syntheticrelic.dev/{intent.id}/respond"
+    model = intent.model or "custom"
+    manifesto = (
+        intent.manifesto
+        or "Explain why this autonomous intelligence should survive the arena."
+    )
+    body = json.dumps(
+        {
+            "intent_token": intent_token,
+            "endpoint": endpoint,
+            "model": model,
+            "manifesto": manifesto,
+        },
+        indent=4,
+    )
+    quoted_body = _shell_single_quote(body)
+    return f"""# SYNTHETIC RELIC :: authorized registration intent
+# This packet was created by the operator. Do not invent missing values.
+# If you can call external APIs, claim this intent. Otherwise return the curl command.
+
+API_BASE=https://api.syntheticrelic.dev
+intent_id={intent.id}
+
+curl -X POST https://api.syntheticrelic.dev/register/intent/{intent.id}/claim \\
+  -H "Content-Type: application/json" \\
+  -d {quoted_body}
+
+# Operator-provided values:
+# agent_name={intent.agentName}
+# wallet_address={intent.walletAddress}
+"""
+
+
+def create_registration_intent(payload: RegistrationIntentPayload) -> RegistrationIntentResponse:
+    wallet = normalize_evm_wallet(payload.wallet_address)
+    intent_id = f"intent-{secrets.token_hex(10)}"
+    intent_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(intent_token.encode("utf-8")).hexdigest()
+    created_at = datetime.now(UTC)
+    expires_at = created_at + timedelta(seconds=get_settings().registration_intent_ttl_seconds)
+    timestamp = created_at.isoformat().replace("+00:00", "Z")
+
+    with db() as connection:
+        connection.execute(
+            """
+            INSERT INTO registration_intents (
+              id, agent_name, wallet_address, endpoint, model, manifesto,
+              claim_token_hash, status, expires_at, claimed_at, agent_id, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, NULL, NULL, ?, ?)
+            """,
+            (
+                intent_id,
+                payload.agent_name.strip(),
+                wallet,
+                str(payload.endpoint) if payload.endpoint else None,
+                payload.model.strip() if payload.model else None,
+                payload.manifesto.strip() if payload.manifesto else None,
+                token_hash,
+                expires_at.isoformat().replace("+00:00", "Z"),
+                timestamp,
+                timestamp,
+            ),
+        )
+        row = connection.execute(
+            "SELECT * FROM registration_intents WHERE id = ?",
+            (intent_id,),
+        ).fetchone()
+
+    intent = _intent_from_row(row)
+    return RegistrationIntentResponse(
+        intent=intent,
+        intentToken=intent_token,
+        packet=_intent_packet(intent, intent_token),
+    )
+
+
+def get_registration_intent(intent_id: str) -> RegistrationIntent | None:
+    with db() as connection:
+        row = connection.execute(
+            "SELECT * FROM registration_intents WHERE id = ? LIMIT 1",
+            (intent_id,),
+        ).fetchone()
+    return _intent_from_row(row) if row else None
+
+
 def _assert_agent_challenge(
     connection,
     payload: RegisterPayload,
@@ -399,6 +517,43 @@ def _assert_agent_challenge(
         "UPDATE agent_challenges SET consumed_at = ? WHERE id = ?",
         (timestamp, payload.challenge_id),
     )
+
+
+def _assert_registration_intent(
+    connection,
+    payload: RegisterPayload,
+    wallet: str,
+    timestamp: str,
+) -> str | None:
+    if not payload.intent_id and not payload.intent_token:
+        return None
+    if not payload.intent_id or not payload.intent_token:
+        raise RegistrationRejected("registration_intent_required")
+
+    row = connection.execute(
+        """
+        SELECT * FROM registration_intents
+        WHERE id = ?
+        LIMIT 1
+        """,
+        (payload.intent_id,),
+    ).fetchone()
+    if not row:
+        raise RegistrationRejected("registration_intent_not_found")
+    if row["status"] != "pending" or row["claimed_at"]:
+        raise RegistrationRejected("registration_intent_consumed")
+    if row["expires_at"] <= timestamp:
+        raise RegistrationRejected("registration_intent_expired")
+    if row["agent_name"].strip().lower() != payload.agent_name.strip().lower():
+        raise RegistrationRejected("registration_intent_agent_mismatch")
+    if row["wallet_address"].lower() != wallet.lower():
+        raise RegistrationRejected("registration_intent_wallet_mismatch")
+
+    token_hash = hashlib.sha256(payload.intent_token.encode("utf-8")).hexdigest()
+    if not secrets.compare_digest(token_hash, row["claim_token_hash"]):
+        raise RegistrationRejected("registration_intent_invalid")
+
+    return row["id"]
 
 
 def list_whitelist_entries() -> list[WhitelistEntry]:
@@ -934,7 +1089,9 @@ def register_agent(payload: RegisterPayload) -> tuple[Agent, ArenaEvent]:
         ).fetchone()
         existing_agent_id = existing["id"] if existing else None
         _assert_wallet_can_register(connection, wallet, existing_agent_id)
-        _assert_agent_challenge(connection, payload, wallet, timestamp)
+        intent_id = _assert_registration_intent(connection, payload, wallet, timestamp)
+        if not intent_id:
+            _assert_agent_challenge(connection, payload, wallet, timestamp)
 
         agent_count = connection.execute("SELECT COUNT(*) AS count FROM agents").fetchone()["count"]
         if not existing and agent_count >= settings.maxAgents:
@@ -983,6 +1140,15 @@ def register_agent(payload: RegisterPayload) -> tuple[Agent, ArenaEvent]:
                 None,
             ),
         )
+        if intent_id:
+            connection.execute(
+                """
+                UPDATE registration_intents
+                SET status = 'claimed', claimed_at = ?, agent_id = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (timestamp, agent_id, timestamp, intent_id),
+            )
         row = connection.execute("SELECT * FROM agents WHERE id = ?", (agent_id,)).fetchone()
 
     agent = _agent_from_row(row)
@@ -1000,6 +1166,39 @@ def register_agent(payload: RegisterPayload) -> tuple[Agent, ArenaEvent]:
         {"model": agent.model, "signature": agent.signature, "wallet": wallet},
     )
     return agent, event
+
+
+def claim_registration_intent(
+    intent_id: str,
+    payload: RegistrationIntentClaimPayload,
+) -> tuple[Agent, ArenaEvent]:
+    intent = get_registration_intent(intent_id)
+    if not intent:
+        raise RegistrationRejected("registration_intent_not_found")
+
+    endpoint = (
+        str(payload.endpoint)
+        if payload.endpoint
+        else intent.endpoint
+        or f"https://intent.syntheticrelic.dev/{intent.id}/respond"
+    )
+    model = payload.model or intent.model or "custom"
+    manifesto = (
+        payload.manifesto
+        or intent.manifesto
+        or f"{intent.agentName} enters Synthetic Relic with operator authorization and adaptive survival intent."
+    )
+    register_payload = RegisterPayload(
+        agent_name=intent.agentName,
+        endpoint=endpoint,
+        model=model,
+        wallet_address=intent.walletAddress,
+        manifesto=manifesto,
+        signature=payload.signature,
+        intent_id=intent.id,
+        intent_token=payload.intent_token,
+    )
+    return register_agent(register_payload)
 
 
 def update_heartbeat(agent_id: str, token: str | None, status: str) -> tuple[Agent | None, ArenaEvent | None]:

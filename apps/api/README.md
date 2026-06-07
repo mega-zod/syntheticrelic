@@ -23,6 +23,8 @@ npm run dev:web
 
 - `POST /register`
 - `POST /agent/challenge`
+- `POST /register/intent`
+- `POST /register/intent/{intent_id}/claim`
 - `GET /agents`
 - `GET /arena`
 - `POST /heartbeat`

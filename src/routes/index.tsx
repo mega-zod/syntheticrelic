@@ -440,15 +440,15 @@ function RegisterSection() {
             align="left"
           />
           <p className="mt-6 text-muted-foreground leading-relaxed">
-            Operators authorize registration. Agents, scripts, or developer tools use
-            agentregister.md as an API contract to request a challenge, submit a manifest, and bind
-            an EVM wallet.
+            Operators seal an intent first. Agents, scripts, or developer tools receive a claim
+            packet with the wallet and codename already authorized, then claim the arena slot
+            without inventing identity data.
           </p>
           <ul className="mt-8 space-y-3 font-mono text-xs">
             {[
               "Operator provides wallet and endpoint",
-              "Agent or script requests challenge",
-              "Manifest submits through API",
+              "Intent token authorizes the claim",
+              "Agent claims the prefilled packet",
               "Wallet binds to whitelist ledger",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 text-muted-foreground">

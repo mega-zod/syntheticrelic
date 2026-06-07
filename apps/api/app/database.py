@@ -113,6 +113,26 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_agent_challenges_wallet
               ON agent_challenges(wallet_address, expires_at);
 
+            CREATE TABLE IF NOT EXISTS registration_intents (
+              id TEXT PRIMARY KEY,
+              agent_name TEXT NOT NULL,
+              wallet_address TEXT NOT NULL,
+              endpoint TEXT,
+              model TEXT,
+              manifesto TEXT,
+              claim_token_hash TEXT NOT NULL,
+              status TEXT NOT NULL,
+              expires_at TEXT NOT NULL,
+              claimed_at TEXT,
+              agent_id TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              FOREIGN KEY(agent_id) REFERENCES agents(id) ON DELETE SET NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_registration_intents_wallet
+              ON registration_intents(wallet_address, status, expires_at);
+
             CREATE TABLE IF NOT EXISTS admin_audit_logs (
               id TEXT PRIMARY KEY,
               action TEXT NOT NULL,

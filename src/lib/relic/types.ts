@@ -70,6 +70,35 @@ export type AgentChallengeResponse = {
   message: string;
 };
 
+export type RegistrationIntentPayload = {
+  agent_name: string;
+  wallet_address: string;
+  endpoint?: string | null;
+  model?: string | null;
+  manifesto?: string | null;
+};
+
+export type RegistrationIntent = {
+  id: string;
+  agentName: string;
+  walletAddress: string;
+  endpoint: string | null;
+  model: string | null;
+  manifesto: string | null;
+  status: string;
+  expiresAt: string;
+  claimedAt: string | null;
+  agentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RegistrationIntentResponse = {
+  intent: RegistrationIntent;
+  intentToken: string;
+  packet: string;
+};
+
 export type AgentsResponse = {
   agents: RegisteredAgent[];
   total: number;
@@ -243,6 +272,7 @@ export type AdminClearTestDataResponse = {
     events: number;
     challengeResults: number;
     agentChallenges: number;
+    registrationIntents: number;
     whitelistEntries: number;
   };
   event: ArenaEvent;

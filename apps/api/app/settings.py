@@ -60,6 +60,10 @@ class Settings(BaseModel):
     admin_session_ttl_seconds: int = _env_int("SYNTHETIC_RELIC_ADMIN_SESSION_TTL_SECONDS", 3600)
     agent_challenge_ttl_seconds: int = _env_int("SYNTHETIC_RELIC_AGENT_CHALLENGE_TTL_SECONDS", 300)
     require_agent_challenge: bool = _env_bool("SYNTHETIC_RELIC_REQUIRE_AGENT_CHALLENGE", True)
+    registration_intent_ttl_seconds: int = _env_int(
+        "SYNTHETIC_RELIC_REGISTRATION_INTENT_TTL_SECONDS",
+        86400,
+    )
     backup_interval_minutes: int = _env_int(
         "SYNTHETIC_RELIC_BACKUP_INTERVAL_MINUTES",
         360 if _is_production() else 0,
